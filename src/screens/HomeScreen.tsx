@@ -1,76 +1,144 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { colors, spacing, typography } from '../theme/colors';
-import { AppButton } from '../components/AppButton';
-import { ManilhaArtwork } from '../components/ManilhaArtwork';
-import { BannerAd } from '../components/BannerAd';
+import { Club, Info } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-export const HomeScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+import { ManilhaFan } from '@/components/cards/ManilhaFan';
+import { ActionButton } from '@/components/common/ActionButton';
+import { PageScaffold } from '@/components/layout/PageScaffold';
+import { useResponsive } from '@/hooks/useResponsive';
+import type { ScreenProps } from '@/navigation/types';
+import { theme } from '@/theme';
+
+export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
+  const { isLandscape, isTablet, isPhoneLandscape } = useResponsive();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Contador de Truco</Text>
-          <Text style={styles.subtitle}>
-            Simples como mesa de bar: marque os pontos, escolha a manilha e acompanhe os campeões da noite.
+    <PageScaffold
+      contentStyle={
+        isLandscape && isTablet
+          ? styles.contentLandscape
+          : isPhoneLandscape
+            ? styles.contentPhoneLandscape
+            : undefined
+      }>
+      <View
+        style={[
+          styles.container,
+          isLandscape && isTablet && styles.containerLandscape,
+          isPhoneLandscape && styles.containerPhoneLandscape,
+        ]}>
+        <View
+          style={[
+            styles.hero,
+            isLandscape && isTablet && styles.heroLandscape,
+            isPhoneLandscape && styles.heroPhoneLandscape,
+          ]}>
+          <ManilhaFan />
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, isPhoneLandscape && styles.titlePhoneLandscape]}>
+            Contador de Truco
           </Text>
-          <View style={styles.artworkWrapper}>
-            <ManilhaArtwork />
-          </View>
-          <View style={styles.actions}>
-            <AppButton label="Novo Jogo" onPress={() => navigation.navigate('ManilhaSelection')} />
-            <AppButton label="Sobre" variant="secondary" onPress={() => navigation.navigate('About')} />
-          </View>
+          <Text style={[styles.subtitle, isPhoneLandscape && styles.subtitlePhoneLandscape]}>
+            O melhor app para suas partidas!
+          </Text>
+          <Text style={[styles.extra, isPhoneLandscape && styles.extraPhoneLandscape]}>
+            Jogue com seus amigos!
+          </Text>
         </View>
-        <View style={styles.footer}>
-          <BannerAd label="Banner - Home" />
+
+        <View
+          style={[
+            styles.actions,
+            isLandscape && isTablet && styles.actionsLandscape,
+            isPhoneLandscape && styles.actionsPhoneLandscape,
+          ]}>
+          <ActionButton
+            icon={Club}
+            iconColor={theme.colors.black}
+            iconFilled
+            label="Novo Jogo"
+            onPress={() => navigation.navigate('SelectManilha')}
+          />
+          <ActionButton
+            icon={Info}
+            label="Sobre"
+            onPress={() => navigation.navigate('About')}
+            variant="secondary"
+          />
         </View>
       </View>
-    </SafeAreaView>
+    </PageScaffold>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
+  actions: {
+    gap: theme.spacing.md,
+    maxWidth: 720,
+    width: '100%',
+  },
+  actionsLandscape: {
+    maxWidth: 560,
+  },
+  actionsPhoneLandscape: {
+    maxWidth: 520,
   },
   container: {
-    flex: 1,
-    paddingHorizontal: spacing.screenPadding,
-    paddingVertical: spacing.screenPadding,
+    alignItems: 'center',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: 16,
+  containerLandscape: {
+    flexDirection: 'row',
+    gap: theme.spacing.xxxl,
+    justifyContent: 'space-between',
   },
-  title: {
-    fontSize: 36,
-    color: colors.textPrimary,
-    fontWeight: '800',
+  contentLandscape: {
+    maxWidth: 1080,
+  },
+  contentPhoneLandscape: {
+    paddingBottom: theme.spacing.xxl,
+  },
+  extra: {
+    color: theme.colors.white,
+    fontSize: 18,
     textAlign: 'center',
+  },
+  extraPhoneLandscape: {
+    fontSize: 16,
+  },
+  hero: {
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.xxxl,
+  },
+  heroLandscape: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  heroPhoneLandscape: {
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
   },
   subtitle: {
-    color: colors.textSecondary,
-    fontSize: typography.body,
+    color: theme.colors.textSoft,
+    fontSize: 24,
     textAlign: 'center',
-    lineHeight: 22,
   },
-  artworkWrapper: {
-    marginVertical: 24,
-    alignItems: 'center',
+  subtitlePhoneLandscape: {
+    fontSize: 18,
   },
-  actions: {
-    alignItems: 'center',
-    gap: 16,
+  title: {
+    color: theme.colors.gold,
+    fontSize: 40,
+    fontWeight: '900',
+    marginTop: theme.spacing.lg,
+    textAlign: 'center',
   },
-  footer: {
-    marginTop: 32,
+  titlePhoneLandscape: {
+    fontSize: 30,
+    marginTop: theme.spacing.sm,
+  },
+  containerPhoneLandscape: {
+    paddingTop: theme.spacing.sm,
   },
 });

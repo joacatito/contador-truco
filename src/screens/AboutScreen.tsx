@@ -1,99 +1,111 @@
 import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AppButton } from '../components/AppButton';
-import { BannerAd } from '../components/BannerAd';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { colors, spacing, typography } from '../theme/colors';
+import { BookOpen } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-export const AboutScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+import { ActionButton } from '@/components/common/ActionButton';
+import { PageScaffold } from '@/components/layout/PageScaffold';
+import type { ScreenProps } from '@/navigation/types';
+import { theme } from '@/theme';
 
+function InfoSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Sobre o app</Text>
-          <Text style={styles.paragraph}>
-            O Contador de Truco nasceu para quem joga no bar, no sítio ou no intervalo do churrasco. Nada de menus complicados:
-            você seleciona a manilha, escolhe os times e sai marcando ponto.
-          </Text>
-          <Text style={styles.title}>Sobre o truco</Text>
-          <Text style={styles.paragraph}>
-            O truco chegou ao Brasil pelos imigrantes espanhóis e italianos. Em Minas Gerais domina a manilha velha, com o zap reinando.
-            Já em São Paulo o vira define tudo, criando as versões de manilha nova. Cada região tem seu tempero, mas todo mundo comemora
-            gritando truco, seis e nove.
-          </Text>
-          <Text style={styles.paragraph}>
-            O app respeita essas diferenças: você escolhe o estilo, cadastra as duplas ou trios e guarda o ranking dos campeões da noite.
-          </Text>
-          <View style={styles.rulesCard}>
-            <Text style={styles.cardTitle}>Quer estudar as regras?</Text>
-            <Text style={styles.paragraph}>
-              Explicamos o embaralhar, as manilhas e o jeito de pedir truco. É só abrir a tela de regras.
-            </Text>
-            <AppButton label="Ver Regras" onPress={() => navigation.navigate('Rules')} />
-          </View>
-        </ScrollView>
-        <View style={styles.footer}>
-          <View style={styles.footerButtons}>
-            <View style={styles.flexSpacer} />
-            <AppButton label="Voltar" variant="ghost" onPress={() => navigation.goBack()} />
-          </View>
-          <BannerAd label="Banner - Sobre" />
-        </View>
-      </View>
-    </SafeAreaView>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {children}
+    </View>
   );
-};
+}
+
+export function AboutScreen({ navigation }: ScreenProps<'About'>) {
+  return (
+    <PageScaffold onBack={() => navigation.goBack()} title="Sobre">
+      <InfoSection title="Sobre o App">
+        <Text style={styles.body}>
+          O Contador de Truco é um aplicativo simples e prático para você e seus amigos
+          contarem os pontos durante as partidas de truco. Desenvolvido pensando na
+          simplicidade e facilidade de uso, perfeito para usar no boteco!
+        </Text>
+      </InfoSection>
+
+      <InfoSection title="O que é Truco?">
+        <Text style={styles.body}>
+          O Truco é um dos jogos de cartas mais populares do Brasil. Jogado com baralho
+          espanhol ou comum sem 8, 9 e 10, o jogo combina estratégia, blefe e muita
+          diversão entre amigos.
+        </Text>
+        <Text style={styles.body}>
+          O objetivo é fazer pontos vencendo as rodadas e ser o primeiro a chegar a 12
+          pontos ou 15 na manilha velha.
+        </Text>
+      </InfoSection>
+
+      <InfoSection title="História do Truco">
+        <Text style={styles.body}>
+          De origem espanhola, o Truco chegou ao Brasil através dos imigrantes e se tornou
+          parte da cultura popular, especialmente no Sul e Sudeste. Cada região desenvolveu
+          suas próprias variações e regras, tornando o jogo ainda mais rico.
+        </Text>
+      </InfoSection>
+
+      <InfoSection title="Diferenças: SP vs MG">
+        <View style={styles.regionCard}>
+          <Text style={styles.regionTitle}>São Paulo</Text>
+          <Text style={styles.body}>
+            Em SP, o mais comum é o Truco Paulista com manilha nova ou vira. A carta
+            virada determina as manilhas. Jogo vai até 12 pontos.
+          </Text>
+        </View>
+        <View style={styles.regionCard}>
+          <Text style={styles.regionTitle}>Minas Gerais</Text>
+          <Text style={styles.body}>
+            Em MG, é mais comum o Truco Mineiro com manilhas fixas. O jogo costuma ser
+            mais mentiroso e vai até 12 pontos também.
+          </Text>
+        </View>
+      </InfoSection>
+
+      <ActionButton
+        accessibilityLabel="Ver regras completas"
+        icon={BookOpen}
+        label="Ver Regras Completas"
+        onPress={() => navigation.navigate('Rules')}
+      />
+    </PageScaffold>
+  );
+}
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
+  body: {
+    color: theme.colors.textMuted,
+    fontSize: 17,
+    lineHeight: 25,
+    marginBottom: theme.spacing.md,
   },
-  container: {
-    flex: 1,
-    paddingHorizontal: spacing.screenPadding,
-    paddingVertical: spacing.screenPadding,
+  regionCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    marginBottom: theme.spacing.md,
+    padding: theme.spacing.lg,
   },
-  content: {
-    gap: 16,
-    paddingBottom: 32,
+  regionTitle: {
+    color: theme.colors.gold,
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: theme.spacing.sm,
   },
-  title: {
-    fontSize: typography.title,
-    color: colors.textPrimary,
-    fontWeight: '700',
+  section: {
+    marginBottom: theme.spacing.xxl,
   },
-  paragraph: {
-    color: colors.textSecondary,
-    fontSize: typography.body,
-    lineHeight: 22,
-  },
-  rulesCard: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    gap: 8,
-  },
-  cardTitle: {
-    color: colors.textPrimary,
-    fontSize: typography.subtitle,
-    fontWeight: '700',
-  },
-  footer: {
-    gap: 12,
-    marginTop: 16,
-  },
-  footerButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  flexSpacer: {
-    flex: 1,
+  sectionTitle: {
+    color: theme.colors.gold,
+    fontSize: 24,
+    fontWeight: '800',
+    marginBottom: theme.spacing.md,
   },
 });
