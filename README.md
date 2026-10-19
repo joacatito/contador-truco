@@ -62,11 +62,18 @@ npm install
 
 ### 2. iOS: instalar pods
 
-Se o comando `bundle exec pod install` não encontrar o CocoaPods no Ruby do sistema, use o Ruby do Homebrew:
+Use o Ruby do Homebrew, não o Ruby 2.6 do sistema (`/usr/bin/ruby`): no SDK do macOS 26 ele não compila gems nativas, e o `bundle install` falha no `json`. Uma vez só:
 
 ```sh
-/opt/homebrew/opt/ruby/bin/gem install --user-install cocoapods -v 1.16.2
-PATH="$HOME/.gem/ruby/3.4.0/bin:/opt/homebrew/opt/ruby/bin:$PATH" pod install --project-directory=ios
+brew install ruby
+echo 'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"' >> ~/.zshrc   # abra um terminal novo depois
+```
+
+Depois, a cada mudança de dependências nativas (as versões do CocoaPods ficam no `Gemfile.lock`, as mesmas do CI):
+
+```sh
+bundle install
+npm run pods
 ```
 
 Depois disso, você pode abrir [`ios/ContadorDeTrucoNative.xcworkspace`](/Users/joaquimtito/Projetos/contador-truco/ios/ContadorDeTrucoNative.xcworkspace) no Xcode ou rodar:
