@@ -13,7 +13,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useResponsive } from '@/hooks/useResponsive';
 import { theme } from '@/theme';
 
-import { AdBannerPlaceholder } from '../ads/AdBannerPlaceholder';
+import { AdBanner } from '../ads/AdBanner';
 import { PageHeader } from './PageHeader';
 
 const BANNER_RESERVED_HEIGHT = 82;
@@ -81,7 +81,7 @@ export function PageScaffold({
           <View style={styles.flex}>{content}</View>
         )}
       </KeyboardAvoidingView>
-      <AdBannerPlaceholder />
+      <AdBanner />
     </SafeAreaView>
   );
 }

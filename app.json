@@ -1,4 +1,11 @@
 {
   "name": "ContadorDeTrucoNative",
-  "displayName": "Contador de Truco"
+  "displayName": "Contador de Truco",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-4936418832972144~9779034006",
+    "ios_app_id": "ca-app-pub-4936418832972144~8071945526",
+    "sk_ad_network_items": [
+      "cstr6suwn9.skadnetwork"
+    ]
+  }
 }

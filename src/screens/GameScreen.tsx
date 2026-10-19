@@ -1,8 +1,8 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useInterstitialAd } from 'react-native-google-mobile-ads';
 
-import { InterstitialAdModal } from '@/components/ads/InterstitialAdModal';
 import { ScoreColumn } from '@/components/game/ScoreColumn';
 import { WinnerOverlay } from '@/components/game/WinnerOverlay';
 import { PageScaffold } from '@/components/layout/PageScaffold';
@@ -12,6 +12,7 @@ import {
   shouldShowInterstitialOnGameOpen,
   shouldShowInterstitialOnScoreAction,
 } from '@/lib/ads';
+import { AD_UNITS } from '@/lib/adUnits';
 import type { ScreenProps } from '@/navigation/types';
 import {
   loadCurrentTeams,
@@ -39,11 +40,32 @@ export function GameScreen({ navigation }: ScreenProps<'Game'>) {
   const [score2, setScore2] = useState(0);
   const [rankingVisible, setRankingVisible] = useState(false);
   const [rankingEntries, setRankingEntries] = useState(toRankingEntries({}));
-  const [interstitialVisible, setInterstitialVisible] = useState(false);
   const [winner, setWinner] = useState<Team | null>(null);
   const [winnerVisible, setWinnerVisible] = useState(false);
   const clickCountRef = useRef(0);
   const hasWinnerRef = useRef(false);
+  const interstitialPendingRef = useRef(false);
+  const interstitial = useInterstitialAd({ adUnitId: AD_UNITS.interstitial, autoLoad: true });
+  const { load: loadInterstitial, show: showInterstitial, status: interstitialStatus } = interstitial;
+
+  useEffect(() => {
+    if (interstitialStatus === 'loaded' && interstitialPendingRef.current) {
+      interstitialPendingRef.current = false;
+      showInterstitial();
+    } else if (interstitialStatus === 'closed') {
+      loadInterstitial();
+    }
+  }, [interstitialStatus, loadInterstitial, showInterstitial]);
+
+  function requestInterstitial() {
+    if (interstitialStatus === 'loaded') {
+      showInterstitial();
+      return;
+    }
+
+    // Mostra assim que o anúncio terminar de carregar.
+    interstitialPendingRef.current = true;
+  }
 
   const maxScore = getScoreLimit(manilha);
   const scoreButtons = getScoreButtons(manilha);
@@ -55,7 +77,7 @@ export function GameScreen({ navigation }: ScreenProps<'Game'>) {
       setScore2(0);
       setWinner(null);
       setWinnerVisible(false);
-      setInterstitialVisible(false);
+      interstitialPendingRef.current = false;
       clickCountRef.current = 0;
       hasWinnerRef.current = false;
 
@@ -71,13 +93,17 @@ export function GameScreen({ navigation }: ScreenProps<'Game'>) {
         setTeam2(savedTeam2);
         setManilha(savedManilha ?? 'paulista');
         setRankingEntries(toRankingEntries(savedRanking));
-        setInterstitialVisible(shouldShowInterstitialOnGameOpen());
+        if (shouldShowInterstitialOnGameOpen()) {
+          requestInterstitial();
+        }
       }
 
       loadData();
       return () => {
         active = false;
+        interstitialPendingRef.current = false;
       };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
 
@@ -93,7 +119,7 @@ export function GameScreen({ navigation }: ScreenProps<'Game'>) {
 
     hasWinnerRef.current = true;
     clickCountRef.current = 0;
-    setInterstitialVisible(false);
+    interstitialPendingRef.current = false;
     const winnerTeam = nextScore1 >= maxScore ? team1 : team2;
     const currentRanking = await loadRanking();
     const nextRanking = incrementRanking(currentRanking, winnerTeam);
@@ -131,7 +157,7 @@ export function GameScreen({ navigation }: ScreenProps<'Game'>) {
 
     clickCountRef.current += 1;
     if (!hasWinnerRef.current && shouldShowInterstitialOnScoreAction(clickCountRef.current)) {
-      setInterstitialVisible(true);
+      requestInterstitial();
       clickCountRef.current = 0;
     }
 
@@ -190,10 +216,6 @@ export function GameScreen({ navigation }: ScreenProps<'Game'>) {
         entries={rankingEntries}
         onClose={() => setRankingVisible(false)}
         visible={rankingVisible}
-      />
-      <InterstitialAdModal
-        onClose={() => setInterstitialVisible(false)}
-        visible={interstitialVisible}
       />
       <WinnerOverlay
         onComplete={handleWinnerComplete}
