@@ -1,0 +1,10 @@
+#!/bin/sh
+# Blocks pushing straight to main from this machine: main only changes through Pull Requests.
+# GitHub's free plan does not enforce branch protection on private repositories, so this is the local half of that rule.
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "✋ Push direto na main bloqueado. Envie sua branch e abra um Pull Request no GitHub."
+    exit 1
+  fi
+done
+exit 0

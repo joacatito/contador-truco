@@ -1,0 +1,13 @@
+# Gitleaks configuration used by the PR Validation workflow (and by `gitleaks` locally).
+# Keeps every default rule; only generated lockfiles are skipped, each named exactly.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated lockfiles whose hashes and identifiers look like API keys"
+paths = [
+  # CocoaPods lockfile: only pod names, versions and SHA-1 podspec checksums.
+  '''^ios/Podfile\.lock$''',
+  # npm lockfile: only package names, versions, URLs and sha512 integrity hashes.
+  '''^package-lock\.json$''',
+]

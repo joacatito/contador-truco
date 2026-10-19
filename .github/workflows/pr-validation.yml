@@ -1,0 +1,95 @@
+# Runs on every pull request into main. Nothing is published from here.
+# Only Linux runners are used: macOS minutes count 10x against the free private-repo quota,
+# so the iOS build runs only in the release pipeline.
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Qualidade
+    uses: ./.github/workflows/checks.yml
+
+  security:
+    name: Segurança
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout (full history for secret scanning)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Secret scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # npm audit reads the lockfile; no install needed.
+      - name: Dependency audit (critical blocks the PR)
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Dependency audit (high is reported as a warning)
+        run: |
+          if ! npm audit --omit=dev --audit-level=high; then
+            echo "::warning title=Dependency audit::High-severity advisories found. See the log of this step."
+          fi
+
+  android-build:
+    name: Build Android (debug)
+    # The slowest job. Dependency-update PRs skip it to save Actions minutes; the release
+    # pipeline still builds Android after they are merged.
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Give Gradle the runner's memory and cores
+        run: |
+          mkdir -p ~/.gradle
+          cat >> ~/.gradle/gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
+          org.gradle.parallel=true
+          org.gradle.workers.max=4
+          kotlin.daemon.jvmargs=-Xmx2g
+          PROPS
+
+      # One ABI is enough to prove the native code compiles, and takes a fraction of the time of all three.
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew app:assembleDebug --no-daemon -PreactNativeArchitectures=arm64-v8a
