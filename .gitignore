@@ -66,10 +66,29 @@ yarn-error.log
 # testing
 /coverage
 
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+# Yarn: this project uses npm (package-lock.json); keep a stray `yarn install` out of the repo.
+.yarn/
+yarn.lock
+.pnp.*
+
+# Signing material and store credentials: these live only in GitHub Secrets and in your backups.
+# See docs/PIPELINE.md.
+*.jks
+*.p12
+*.p8
+*.pem
+*.cer
+*.mobileprovision
+*.provisionprofile
+AuthKey_*.p8
+*service-account*.json
+google-play*.json
+.env
+.env.*
+
+# Build outputs
+*.apk
+*.aab
+*.xcarchive
+*.dSYM.zip
+ExportOptions.plist
