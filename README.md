@@ -97,6 +97,16 @@ cd android && ./gradlew help
 PATH="$HOME/.gem/ruby/3.4.0/bin:/opt/homebrew/opt/ruby/bin:$PATH" pod install --project-directory=ios
 ```
 
+## CI/CD
+
+Todo PR para a `main` passa pelo **PR Validation** (typecheck, lint, testes, Gitleaks, auditoria de dependências e build Android). Cada merge na `main` dispara o **Release**, que publica no Google Play e no TestFlight. Secrets, variáveis e passos manuais estão em [`docs/PIPELINE.md`](docs/PIPELINE.md).
+
+A `main` só muda por Pull Request. Ative o hook que bloqueia push direto nela uma vez em cada clone:
+
+```sh
+git config core.hooksPath .githooks
+```
+
 ## Observação
 
 A pasta `design/` foi mantida apenas como referência do app web descrito e está excluída do ciclo de lint e TypeScript do app nativo.
